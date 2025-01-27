@@ -1,5 +1,4 @@
 from rich import print
-#aqui tudo server
 
 def print_server_started():
     print("[bold magenta]Server started successfully! Listening for cats connections...[/bold magenta]")
@@ -8,16 +7,15 @@ def print_welcome_message():
     print(
         "[bold magenta]Welcome to the Little Cat's Chat! 🐾[/ bold magenta]")
 
-def print_comands():
+def print_commands():
     print("[bold magenta]Here are the available commands:[/bold magenta]")
     print("[bold magenta]1. 'exit' - Leave the chat.[/bold magenta]")
     print("[bold magenta]2. 'list' - Show the list of currently connected clients.[/bold magenta]")
-    print("[bold magenta]3. '$<nickname> <message>' - Send a private message to a specific user (unicast) Format: $nickname message![/bold magenta]")
+    print("[bold magenta]3. '<nickname> $ <message>' - Send a private message to a specific user (unicast) Format: $nickname message![/bold magenta]")
     print("[bold magenta]4. Any other message will be broadcasted to all users in the chat.[/bold magenta]")
     print("[bold magenta]Please note, we do not tolerate offensive language in our chat. We are all beautiful cats here, so be respectful! 😸[/bold magenta]")
     print("[bold magenta]Please note that all messages will be stored to verify compliance with our chat guidelines.[/bold magenta]")
     print("[bold magenta]Enjoy chatting with us![/bold magenta]")
-
 
 
 def print_exit_message():
@@ -47,8 +45,6 @@ def print_socket_error(ender, error):
 
 def print_closing_connection(ender):
     print(f"[bold magenta]Closing connection with {ender}[/bold magenta]")
-
-#print rosa client 
 
 def print_invalid_command():
     print("[bold magenta]Invalid command. Please try again.[/bold magenta]")

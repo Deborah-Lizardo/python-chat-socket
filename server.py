@@ -17,17 +17,17 @@ from rich_utils import (
 HOST = '127.0.0.1'
 PORT = 50000
 
-clients = []  # Lista para armazenar clientes conectados
-chat_history = []  # Lista para armazenar o histórico de mensagens
+clients = []  # List to store connected clients
+chat_history = []  # List to store message history
 
 
-# Função para enviar boas-vindas ao novo cliente
+# Function to send welcome message to the new client
 def send_welcome(sock_conn, nickname):
     print_welcome_message()
     sock_conn.sendall(f"Welcome, {nickname} cat, to the Little Cats Gossip Chat!".encode())
 
 
-# Função que recebe o apelido do cliente
+# Function to handle client's nickname
 def handle_nick(sock_conn, ender):
     while True:
         nickname = sock_conn.recv(1024).decode()
@@ -40,7 +40,7 @@ def handle_nick(sock_conn, ender):
         return nickname
 
 
-# Função que lida com as mensagens
+# Function to handle messages
 def handle_message(sock_conn, message, nickname, clients):
     message = message.strip()
 
@@ -53,11 +53,11 @@ def handle_message(sock_conn, message, nickname, clients):
         list_clients(sock_conn, clients)
 
     elif message.lower() == "see gossip":
-        # Envia o histórico de mensagens quando o cliente pedir
+        # Send message history when the client requests it
         send_chat_history(sock_conn)
 
     elif "$" in message:
-        # Lógica de unicast (mensagem privada)
+        # Unicast logic (private message)
         recipient_nickname, msg = message.split("$", 1)
         recipient_nickname = recipient_nickname.strip()
         if recipient_nickname and msg.strip():
@@ -66,11 +66,11 @@ def handle_message(sock_conn, message, nickname, clients):
             sock_conn.sendall("Invalid private message format. Use: recipient_name $ message.".encode())
 
     else:
-        # Caso a mensagem seja algo desconhecido ou malformado
+        # If the message is unknown or malformed
         if not message:
             sock_conn.sendall("Message cannot be empty. Please try again.".encode())
         else:
-            # Broadcast: envia a mensagem para todos os outros clientes conectados
+            # Broadcast: send the message to all other connected clients
             for client in clients:
                 if client['connection'] != sock_conn:
                     try:
@@ -79,13 +79,13 @@ def handle_message(sock_conn, message, nickname, clients):
                     except Exception as e:
                         print_socket_error(client['nickname'], e)
 
-            # Adiciona a mensagem no histórico
+            # Add the message to the history
             chat_history.append(f"{nickname}: {message}")
 
     return True
 
 
-# Função para enviar mensagem privada (unicast)
+# Function to send private message (unicast)
 def send_private_message(recipient_nickname, message, sender_nickname, clients, sender_conn):
     recipient_conn = None
     for client in clients:
@@ -103,7 +103,7 @@ def send_private_message(recipient_nickname, message, sender_nickname, clients, 
         sender_conn.sendall(f"Cat '{recipient_nickname}' not found.\n".encode())
 
 
-# Função para listar os clientes conectados
+# Function to list connected clients
 def list_clients(sock_conn, clients):
     if not clients:
         print_no_clients_connected()
@@ -114,7 +114,7 @@ def list_clients(sock_conn, clients):
     print_client_list(clients)
 
 
-# Função para remover o cliente da lista de clientes conectados
+# Function to remove a client from the list of connected clients
 def remove_client(sock_conn, clients, nickname):
     for client in clients:
         if client['connection'] == sock_conn:
@@ -123,7 +123,7 @@ def remove_client(sock_conn, clients, nickname):
             break
 
 
-# Função para enviar uma mensagem para todos os clientes conectados
+# Function to broadcast a message to all connected clients
 def broadcast_message(message, clients):
     for client in clients:
         try:
@@ -132,19 +132,19 @@ def broadcast_message(message, clients):
             print_socket_error(client['nickname'], e)
 
 
-# Função para enviar o histórico de mensagens para o cliente que pedir
+# Function to send chat history to the client who requests it
 def send_chat_history(sock_conn):
     if not chat_history:
         sock_conn.sendall("No messages in the gossip yet.".encode())
         return
 
-    # Envia o histórico de mensagens para o cliente
+    # Send the message history to the client
     sock_conn.sendall("Chat history:\n".encode())
     for message in chat_history:
         sock_conn.sendall(message.encode())
 
 
-# Função que gerencia a comunicação com o cliente
+# Function that manages communication with the client
 def handle_client(sock_conn, ender, clients):
     nickname = handle_nick(sock_conn, ender)
     print(f"Connection established with {nickname} {ender}")
@@ -158,11 +158,11 @@ def handle_client(sock_conn, ender, clients):
         clients.append({"nickname": nickname, "connection": sock_conn, "address": ender})
 
         while True:
-            message = sock_conn.recv(1024).decode()  # Recebe a mensagem do cliente
-            if not message:  # Se não houver mensagem ou a conexão for fechada
+            message = sock_conn.recv(1024).decode()  # Receive the message from the client
+            if not message:  # If there's no message or the connection is closed
                 break
             should_continue = handle_message(sock_conn, message, nickname, clients)
-            if not should_continue:  # Se o cliente sair
+            if not should_continue:  # If the client leaves
                 break
 
     except sock.error as e:
@@ -175,18 +175,18 @@ def handle_client(sock_conn, ender, clients):
         sock_conn.close()
 
 
-# Função que inicia o servidor
+# Function to start the server
 def start_server():
     sock_server = sock.socket(sock.AF_INET, sock.SOCK_STREAM)
     sock_server.bind((HOST, PORT))
     sock_server.listen(5)
-    print_server_started()  # Inicia a escuta do servidor
+    print_server_started()  # Start server listening
 
     while True:
         try:
-            sock_conn, ender = sock_server.accept()  # Aceita uma nova conexão de cliente
+            sock_conn, ender = sock_server.accept()  # Accept a new client connection
             client_thread = threading.Thread(target=handle_client, args=(sock_conn, ender, clients))
-            client_thread.start()  # Cria uma nova thread para atender o cliente
+            client_thread.start()  # Create a new thread to handle the client
         except sock.error as e:
             print(f"Error accepting connection: {e}")
         except Exception as e:
